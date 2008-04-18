@@ -1,0 +1,248 @@
+.TH opencli 2 2006-12-27
+.SH NAME
+opencli \- The OpenPanel command line interface shell
+.SH SYNOPSIS
+opencli [--host|-h addr] [--shellcmd|-c cmdstring] [cmd] [cmd] [...]
+.IP --host,\ -h
+Connect to a host over tcp (authentication needed).
+.IP --shellcmd,\ -c
+Treats cmdstring like a shell-quoted list, for ssh usage. See SSH Usage for
+more details.
+.SH INTRODUCTION
+The opencli tool is a command line interface to the opencore configuration
+system, intended as an alternative means of access to your OpenPanel host.
+It places you on a cisco-like command line that allows you to manipulate
+configuration objects under your control.
+.P
+Alternatively, opencli can be used non-interactively; when commands are
+specified on the commandline, the interactive shell does not appear.
+.SH BASIC OPERATION
+After you invoke the opencli tool from the command line, you will be prompted
+by a login request. Fill in the same username@domain / password combination
+you would at the OpenPanel GUI.
+.P
+The commandline follows most standard terminal conventions. For your
+reference, here is a list of key mappings:
+.IP "^A"
+Jump to start of the command line
+.IP "^E"
+Jump to end of the command line
+.IP "^U"
+Erase from beginning of line
+.IP "^Y"
+Erase until end of line
+.IP "^F"
+Next word
+.IP "^B"
+Previous word
+.IP "<TAB>"
+Complete word at previous position
+.IP "?"
+Show context-help for current position
+.IP "^D"
+Exit one level up (or exit shell if at root configuration level)
+.IP "^Z"
+Go back to root level
+.P
+The best way to get to know your options is to use the '?' key liberally.
+Most commands are pretty explicit in what kind of arguments they expect. For
+some commands, the last row of arguments are written down as variable
+declarations in the following form:
+.IP
+command arguments param=value anotherparam="another value"
+.P
+Note how parameters that contain whitespace need to be enclosed by double
+quotes like above. This is also the place where the question mark will yield
+an actual question mark in your input.
+.SH CREATING A USER
+To set up a unix account _and_ an openpanel login for a user, follow
+this general formula (don't be afraid to tab/questionmark around to get
+a feel for the other options):
+.IP
+create user jon name_customer="Jon" password="tOps3kr1t"
+.P
+If everything went okay, you should be able to log into opencli with the new
+jon account now.
+.SH SETTING UP DNS
+Hosting (be it email, dns or websites) is all packaged under a group object
+called 'domain'. Let's assume we want to set up DNS hosting for acme.org:
+.IP
+create domain acme.org
+.br
+configure domain acme.org
+.br
+create masterdomain acme.org admin=hm@acme.org
+.br
+configure dnsdomain acme.org
+.br
+create a name=ns1 addressval=10.1.1.1
+.br
+create ns name= addressval=ns1
+.SH SETTING UP AN APACHE VIRTUAL HOST
+Creating a vhost is easy, you just need a domain:
+.IP
+configure domain acme.org
+.br
+create vhost www.acme.org admin=m@acme.org mod_php=true
+.SH SETTING UP FTP
+You can create ftp-accounts on two levels: On the domain level, with
+access to all its vhosts, or on the vhost level, with access only to the
+specific site's directory:
+.IP
+configure domain acme.org
+.br
+create ftp-user admin@acme.org password=secretpass
+.br
+configure vhost www.acme.org
+.br
+create ftp-user webmaster@www.acme.org password=anothersecret
+.SH SETTING UP EMAIL
+An email domain, like a dns domain, can be set up under the domain object.
+Under it, you can create address objects that are either aliases or
+physical mailboxes. Under aliases you can create multiple destination
+objects:
+.IP
+configure domain acme.org
+.br
+create mail acme.org
+.br
+configure mail acme.org
+.br
+create box john@acme.org password=nHfuIr allowpop3=true
+.br
+create alias all@acme.org
+.br
+configure alias all@acme.org
+.br
+create dest addressval=someone@external.org
+.br
+create dest addressref=<TAB>
+.SH CONFIGURING THE FIREWALL
+If the IPTables module is loaded, you should be able to access firewall
+functionality from the root level. First thing you need to do if you
+want to use it is to enable it. In its default configuration it allows
+all relevant ports, if you want to make sure you're not going to lock
+yourself out, first verify that the default rules are there:
+.IP
+configure firewall
+.br
+show port
+.P
+You should get something like this:
+.P
+	+------+-------------+--------+---------+
+.br
+	| id   | description | state  | filter  |
+.br
+	+------+-------------+--------+---------+
+.br
+	| 110  | pop3        | permit | tcp-udp |
+.br
+	| 143  | imap        | permit | tcp-udp |
+.br
+	| 21   | ftp         | permit | tcp-udp |
+.br
+	| 22   | ssh         | permit | tcp-udp |
+.br
+	| 25   | smtp        | permit | tcp-udp |
+.br
+	| 4089 | openpanel   | permit | tcp-udp |
+.br
+	| 53   | dns         | permit | tcp-udp |
+.br
+	| 80   | http        | permit | tcp-udp |
+.br
+	+------+-------------+--------+---------+
+.br
+.P
+If that's verified, then we're fine and you can go ahead and enable the
+firewall:
+.IP
+^Z (back to ROOT level)
+.br
+update firewall enabled=true
+.P
+In its default inception the firewall follows this basic set-up:
+.br
+1: Anything not explicitly permitted is denied
+.br
+2: Any traffic related to a permitted connection is permitted
+.br
+3: Any traffic to ports as listed in the port list is permitted,
+.br
+	4: Except for those matching more specific rules under a port.
+.P
+So, to disable access to smtp for any network except your office lan at
+192.168.3.0/24, you can do this:
+.IP
+configure firewall
+.br
+configure port 25
+.br
+create rule ip=192.168.3.0 subnet=255.255.255.0 state=permit
+.br
+^Z
+.br
+update port 25 state=deny
+.P
+You can do the same for the ssh port, but of course make sure you don't
+lock yourself out by _first_ creating the state=permit rule before you
+update the port object to state=deny.
+.SH CONFIGURING SOFTWARE UPDATES
+The SoftwareUpdate background process needs some time to accumulate all
+package information, if you just started up openpanel you have to take into
+account a couple of minutes for this information to be gathered. Once they
+are available (of course I'm assuming you have been anticipating the joy
+of doing your updates through openpanel and you've got a couple of pending
+updates;) you can take a look at them through the system-update object:
+.IP
+configure system-update
+.br
+show package
+.P
+You should get a small (or longer, depending on how naughty you have been)
+list of pending updates like this:
+.br
+	+----------------------+--------------+--------------+---------+
+.br
+	| id                   | newversion   | source       | enabled |
+.br
+	+----------------------+--------------+--------------+---------+
+.br
+	| amavisd-new.i386     | 2.4.4-1.el4.r| rpmforge     | false   |
+.br
+	| clamav-db.i386       | 0.88.7-1.el4.| rpmforge     | false   |
+.br
+	| clamav.i386          | 0.88.7-1.el4.| rpmforge     | false   |
+.br
+	| clamd.i386           | 0.88.7-1.el4.| rpmforge     | false   |
+.br
+	| tar.i386             | 1.14-12.RHEL4| update       | false   |
+.br
+	| tzdata.noarch        | 2006m-3.el4  | update       | false   |
+.br
+	+----------------------+--------------+--------------+---------+
+.P
+The system-update object itself can be used to set the default policy for
+enabling pending updates. Regardless of policy you can flag individual
+packages for update, so in the example above we could flag tar for update:
+.IP
+configure system-update
+.br
+configure package tar.i386 enabled=true
+.SH SSH USAGE
+Because opencli commands can contain spaces, remote ssh usage is a bit
+different when it comes to quoting:
+.P
+.br
+$ ssh openadmin@host "opencli 'conf domain example.net' 'show mail'"
+.br
++-------------+
+.br
+| id          |
+.br
++-------------+
+.br
+| example.net |
+.br
++-------------+
