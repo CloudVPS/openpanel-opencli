@@ -1267,8 +1267,14 @@ value *opencliApp::srcClass (const value &v, int p)
 	}
 	else
 	{
-		// No filtering for other commands
-		res = shortnames;
+		foreach (w, shortnames)
+		{
+			coreclass C (conn, w("realid"));
+			if (! C.metabase ())
+			{
+				res[w.id()] = w;
+			}
+		}
 	}
 
 	return &res;
