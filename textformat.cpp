@@ -161,7 +161,7 @@ void asciitable::addrow (const value &row)
 	{
 		foreach (hdr, H)
 		{
-			int hwidth = hdr.sval().strlen();
+			int hwidth = hdr.sval().utf8len();
 			hdr("width") = hwidth;
 		}
 	}
@@ -184,7 +184,7 @@ void asciitable::addhline (value &into, char lx, char mx, char rx, char ln)
 	{
 		++p;
 		string tstr;
-		tstr.pad (hdr("width").ival() + 2, ln);
+		tstr.utf8pad (hdr("width").ival() + 2, ln);
 		r.strcat (tstr);
 		if (p != H.count()) r.strcat (mx);
 	}
@@ -229,7 +229,11 @@ void asciitable::addline (value &into, const value &fields, bool allbold)
 			if (! asbold) asbold = myhdr("bold");
 	
 			string fstr = f;
-			fstr.pad (myhdr("width"), ' ');
+			if (fstr.utf8len() > myhdr("width").ival())
+			{
+				fstr.crop (fstr.utf8pos (myhdr("width").ival()));
+			}
+			fstr.utf8pad (myhdr("width"), ' ');
 
 			r.strcat (' ');
 			if (asbold) r.strcat ("\033[1m");
@@ -326,7 +330,7 @@ int asciitable::maxsplitsize (const string &str, char spl)
 	int res = 0;
 	foreach (l, elements)
 	{
-		int ln = l.sval().strlen();
+		int ln = l.sval().utf8len();
 		if (ln>res) res=ln;
 	}
 	return res;

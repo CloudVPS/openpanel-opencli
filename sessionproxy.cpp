@@ -2,6 +2,7 @@
 #include <grace/http.h>
 #include <grace/application.h>
 #include <grace/sslsocket.h>
+#include <grace/filesystem.h>
 
 #include "opencli.h"
 
@@ -659,10 +660,17 @@ value *sessionproxy::sendrequest (const value &req)
 	
 	if ((ht.status != 200) || (! jsonout))
 	{
+		string realst = "%i" %format (ht.status);
+		if (ht.status != 200) fs.save ("realstatus",realst);
 		delete &res;
-		throw (connectionException());
+		if (ht.status != 200) throw (connectionException("no 200 status"));
+		throw (connectionException("No JSON data"));
 	}
 	
 	res.fromjson (jsonout);
+	if (! res.count())
+	{
+		throw (connectionException("Could not parse JSON data"));
+	}
 	return &res;
 }
