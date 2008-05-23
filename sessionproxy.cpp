@@ -176,6 +176,11 @@ bool sessionproxy::updateobject (const string &ofclass, const string &withid,
 	o_data.rmval ("id");
 	o_data.rmval ("childclasses");
 	o_data.rmval ("class");
+	if (o_data.exists ("owner")) o_data.rmval ("owner");
+	if (o_data.exists ("parentuuid")) o_data.rmval ("parentuuid");
+	if (o_data.exists ("owneruuid")) o_data.rmval ("owneruuid");
+	if (o_data.exists ("version")) o_data.rmval ("version");
+	if (o_data.exists ("deleted")) o_data.rmval ("deleted");
 	if (o_data.exists ("metaid")) o_data.rmval ("metaid");
 	
 	value request =
