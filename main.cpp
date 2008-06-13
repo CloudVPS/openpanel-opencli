@@ -215,6 +215,7 @@ void opencliApp::commandline (void)
 				fout.writeln ("-> %s" %format (cmd));
 				shell.singlecmd (cmd);
 			}
+                	shell.term.off ();
 		}
 		else
 		{
