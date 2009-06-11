@@ -132,7 +132,6 @@ void opencliApp::commandline (void)
 	shell.addsyntax ("debug session", &opencliApp::cmdDebug);
 	shell.addsyntax ("debug capabilities @class", &opencliApp::cmdDebug);
 	shell.addsyntax ("debug params @class", &opencliApp::cmdDebug);
-	shell.addsyntax ("debug references *", &opencliApp::cmdDebug);
 	shell.addsyntax ("debug classmapping", &opencliApp::cmdDebug);
 	shell.addsyntax ("debug ignore_capb", &opencliApp::cmdDebug);		
 	shell.addsyntax ("debug restore_capb", &opencliApp::cmdDebug);	
@@ -160,7 +159,6 @@ void opencliApp::commandline (void)
 	shell.addhelp ("debug session", 	"Output internal session");
 	shell.addhelp ("debug capabilities","Output class capabilities");
 	shell.addhelp ("debug params", 		"Debug command parameter input");
-	shell.addhelp ("debug references", 	"Debug class references");
 	shell.addhelp ("debug classmapping","Debug internal class mapping");
 	shell.addhelp ("debug ignore_capb", "Ignore capabilities");
 	shell.addhelp ("debug restore_capb","Restore capabilities");
@@ -288,13 +286,6 @@ int	 opencliApp::cmdDebug (const value &argv)
 			formatter.outputwithpager (txt);
 			break;
 			
-		incaseof ("references") :
-			value ref;
-			ref = conn.getreferences (argv[2]);
-			txt = ref.toxml ();
-			formatter.outputwithpager (txt);
-			break;
-
 		incaseof ("classmapping") :
 			txt = shortnames.toxml ();
 			formatter.outputwithpager (txt);
@@ -479,7 +470,7 @@ int opencliApp::cmdShow (const value &argv)
 	
 	foreach (v, params)
 	{
-		if ((v["visible"]) && (v["type"] != "group"))
+		if (v["visible"])
 		{
 			vdata.newval() =
 				$("field",v.id()) ->
@@ -562,19 +553,12 @@ int opencliApp::cmdList (const value &argv)
 		vcolumns[idfield] = idfield;
 		vcolumns[idfield]("bold") = "true";
 		
-		value nickdb;
-		
 		foreach (col, cclass.parameters ())
 		{	
 			if (col.id() != "id" && col["description"] != "")
 			{
 				bool addv = true;
 				statstring cid = col.id();
-				if (col.exists ("nick"))
-				{
-					cid = col["nick"];
-					nickdb[cid][col.id()];
-				}
 				
 				if (col["clihide"] == true) addv = false;
 				
@@ -598,16 +582,6 @@ int opencliApp::cmdList (const value &argv)
 			foreach (c, vcolumns)
 			{
 				statstring nickid = c.id();
-				if (nickdb.exists (nickid)) foreach (nick, nickdb[nickid])
-				{
-					if (record.exists (nick.id()) &&
-					    record[nick.id()].sval())
-					{
-						nickid = nick.id();
-						break;
-					}
-				}
-				
 				if (record.exists (nickid) && record[nickid].sval())
 				{
 					vdata[-1][c.id()] = record[nickid];
@@ -665,54 +639,22 @@ int opencliApp::cmdCreate (const value &argv)
 
 	if (objid) argvals["id"] = objid;
 
-	// First let's hunt for groups.
-	value groupcache;
-	foreach (pv, cparam["enabled"])
-	{
-		if (pv.exists ("nick"))
-		{
-			groupcache[pv["nick"]][pv.id()] = true;
-		}
-	}
-
 	// Check if we have all enabled required fields filled in
 	foreach (pv, cparam["enabled"])
 	{
 		// If the parameter is required and has no default value
 		if (pv["required"] == "true")
 		{
-			if (! pv.exists ("nick"))
+			if (! argvals.exists (pv.id()))
 			{
-				if (! argvals.exists (pv.id()))
+				// If there's a default value, we'll just put it in.
+				if (pv["default"].sval())
 				{
-					// If there's a default value, we'll just put it in.
-					if (pv["default"].sval())
-					{
-						argvals[pv.name()] = pv["default"].sval();
-					}
-					else
-					{
-						ferr.writeln ("%% Missing field: %s" %format (pv.id()));
-						return 0;
-					}
+					argvals[pv.name()] = pv["default"].sval();
 				}
-			}
-			else
-			{
-				bool found = false;
-				foreach (gnode, groupcache[pv["nick"]])
+				else
 				{
-					if (argvals.exists (gnode.id()))
-					{
-						found = true;
-						break;
-					}
-				}
-				
-				if (! found)
-				{
-					ferr.writeln ("%% Missing member field of '%s' group"
-								  			%format (pv["group"]));
+					ferr.writeln ("%% Missing field: %s" %format (pv.id()));
 					return 0;
 				}
 			}
@@ -1445,27 +1387,10 @@ value *opencliApp::srcParam (const value &v, int p)
 		vpairs[key];
 	}
 	
-	value groupcache;
-	foreach (pair, vpairs)
-	{
-		if (! cparam["enabled"].exists (pair.id())) continue;
-		
-		value &P = cparam["enabled"][pair.id()];
-		if (P.exists ("group"))
-		{
-			groupcache[P["group"]] = true;
-		}
-	}
-	
 	// Here we will create the actual expansion set .. yay
 	// only show the enabled properties
 	foreach (p, cparam["enabled"])
 	{
-		if (p.exists ("group"))
-		{
-			if (groupcache.exists (p["group"].sval())) continue;
-		}
-		
 		if (! vpairs.exists (p.id()))
 		{
 			string r;
@@ -1477,21 +1402,6 @@ value *opencliApp::srcParam (const value &v, int p)
 					res[r] = p["description"].sval();
 					r = "%s=false" %format (p.id());
 					res [r] = p["description"].sval();
-					break;
-				
-				incaseof ("ref") :
-					value ref;
-					ref = conn.getreferences (p["refstring"].sval());
-				
-					foreach (rf, ref)
-					{
-						r.printf ("%s=%s", p.name(), rf.name());
-						res [r] = rf.sval ();
-						r.crop ();
-					}
-					break;
-					
-				incaseof ("group") :
 					break;
 									
 				incaseof ("enum") :
