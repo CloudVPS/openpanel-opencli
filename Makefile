@@ -5,7 +5,7 @@ OBJ	= main.o sessionproxy.o textformat.o version.o
 all: opencli README.opencli
 
 version.cpp:
-	mkversion version.cpp
+	grace mkversion version.cpp
 
 opencli: $(OBJ)
 	$(LD) $(LDFLAGS) -o opencli $(OBJ) $(LIBS) -lgrace-ssl
