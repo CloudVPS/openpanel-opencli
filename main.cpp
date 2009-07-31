@@ -10,6 +10,7 @@
 $exception (obsoletedClassStateException, "Interface in outmoded 'class' state");
 
 bool SHOULDEXIT = false;
+bool INTERACTIVE = true;
 APPOBJECT(opencliApp);
 
 void cbkeepalive (void *obj)
@@ -197,6 +198,7 @@ void opencliApp::commandline (void)
 	
 		if (argv["*"].count() || argv.exists ("--shellcmd"))
 		{
+			INTERACTIVE = false;
 			value cmdlist;
 
 			if (argv.exists("--shellcmd"))
@@ -833,10 +835,13 @@ int opencliApp::cmdDelete (const value &argv)
 		}
 	}
 	
-	if (! formatter.userconfirm ("Do you really want to delete this item?"))
+	if (INTERACTIVE)
 	{
-		fout.printf ("Delete aborted...\n");
-		return 0;
+		if (! formatter.userconfirm ("Do you really want to delete this item?"))
+		{
+			fout.printf ("Delete aborted...\n");
+			return 0;
+		}
 	}
 
 	// Perform the delete.
@@ -1136,6 +1141,12 @@ value *opencliApp::srcClassObject (const value &v, int p)
 		statstring tpid = ctx.uuid ();
 		value records = conn.getrecords (classid, tpid);
 		coreclass cclass (conn, classid);
+		
+		if (! INTERACTIVE)
+		{
+			res[v[2].sval()];
+			return &res;
+		}
 		
 		if (cclass.singleton ())
 		{
