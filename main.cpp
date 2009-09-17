@@ -66,7 +66,7 @@ int opencliApp::main (void)
 	return 0;
 }
 
-#define PRINTERR(x) ferr.printf (x ": %s\n", conn.geterror().str())
+#define PRINTERR(x) ferr.writeln (x ": %s" %format (conn.geterror()))
 				
 // ==========================================================================
 // METHOD opencliApp::commandline
@@ -445,7 +445,6 @@ string *opencliApp::uuidToUser (const statstring &uuid)
 // ==========================================================================
 int opencliApp::cmdShow (const value &argv)
 {
-	fout.writeln (">> cmdShow");
 	if (ctx.atRoot())
 	{
 		fout.writeln ("% No local data at this level");
@@ -459,19 +458,14 @@ int opencliApp::cmdShow (const value &argv)
 					$("desc", $attr("bold",false)->$val("Description"));
 
 
-	fout.writeln (">> cmdShow ctx.currentClass()");
 	statstring classid = ctx.currentClass ();
-	fout.writeln (">> cmdShow new coreclass");
 	coreclass cclass (conn, classid);
 	
-	fout.writeln (">> cmdShow cclass.parameters()");
 	value params = cclass.parameters ();
 
-	fout.writeln (">> uuidtouser");
 	string uname = uuidToUser (crecord["ownerid"]);
 	if (! uname) uname = "root";
 
-	fout.writeln (">> cmdShow tail");
 	vdata.newval() =
 		$("field", "owner") ->
 		$("value", uname) ->
