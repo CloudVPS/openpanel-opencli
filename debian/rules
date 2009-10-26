@@ -1,19 +1,23 @@
 #!/usr/bin/make -f
 
+build: build-stamp
+build-stamp:
+	./configure
+	make
+	touch build-stamp
+	
+install: install-stamp
+install-stamp: build-stamp
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+	install -m 755 opencli debian/openpanel-cli/usr/bin
+	gzip -c < opencli.1 > debian/openpanel-cli//usr/share/man/man1/opencli.1.gz
+	touch install-stamp
 
-BUILD_ROOT=$(CURDIR)/debian/tmp
-install:
-trm -rf ${BUILD_ROOT}
-tmkdir -p ${BUILD_ROOT}/usr/bin ${BUILD_ROOT}/usr/share/man/man1
-tinstall -m 755 opencli ${BUILD_ROOT}/usr/bin
-tgzip -c < opencli.1 > ${BUILD_ROOT}/usr/share/man/man1/opencli.1.gz
-
-build:
-t./configure
-tmake
 binary-indep:
 
-binary-arch binary: build install
+binary-arch: build install
 	if [ -d debian/tmp ] ; then dh_install -a --sourcedir=debian/tmp ; fi
 	dh_installdocs -a
 	dh_installdeb -a
@@ -23,5 +27,12 @@ binary-arch binary: build install
 	dh_gencontrol -a
 	dh_md5sums -a
 	dh_builddeb -a
+
+binary: binary-indep binary-arch
+
+clean:
+	rm -f build-stamp install-stamp
+	[ ! -f makeinclude ] || make clean
+	dh_clean
 
 .PHONY: build binary binary-arch binary-indep clean install

@@ -2,7 +2,7 @@ Source: openpanel-cli
 Section: misc
 Priority: optional
 Maintainer: OpenPanel/Panel6 packager <packages@panelsix.com>
-Build-Depends: debhelper (>= 5)
+Build-Depends: debhelper (>= 5), libgrace-ssl-devel
 Standards-Version: 3.7.2
 
 Package: openpanel-cli
