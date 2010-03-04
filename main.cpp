@@ -116,6 +116,7 @@ void opencliApp::commandline (void)
 	shell.addsyntax ("configure @classobject @classobject", &opencliApp::cmdSelect);
 	shell.addsyntax ("show", &opencliApp::cmdShow);
 	shell.addsyntax ("show @classobject", &opencliApp::cmdList);
+	shell.addsyntax ("show @classobject @classobject", &opencliApp::cmdList);
 	shell.addsyntax ("query @classes @field", &opencliApp::cmdQuery);				 
 	shell.addsyntax ("query @classes @field #", &opencliApp::cmdQuery);
 	shell.addsyntax ("create @userclassparam", &opencliApp::cmdCreate);
@@ -517,7 +518,79 @@ int opencliApp::cmdList (const value &argv)
 		formatter.adddata (coldata);
 		formatter.go ();
 	}
-	else
+	else if (argv.count() == 3) // show $type $id
+	{
+		statstring classid = shortnames[argv[1]]("realid");
+		statstring tpid = ctx.uuid ();
+		statstring wantedid = argv[2];
+		value records = conn.getrecords (classid, tpid);
+		coreclass cclass (conn, classid);
+		if (cclass.autoindex ())
+		{
+			value nrec;
+			
+			UUID.processlist (classid, tpid, records);
+			
+			foreach (trec, records)
+			{
+				statstring rid;
+				rid = UUID.tempfromuuid (trec.id(), classid, tpid);
+				nrec[rid] = trec;
+				nrec[rid]["id"] = rid;
+			}
+			
+			records = nrec;
+		}
+		if (! records.count())
+		{
+			fout.printf ("%% \033[1mNo objects\033[0m\n");
+			return 0;
+		}
+		if (! records.exists (wantedid))
+		{
+			fout.printf ("%% \033[1mNo such object\033[0m\n");
+			return 0;
+		}
+		
+		value &rec = records[wantedid];
+		
+		value params = cclass.parameters ();
+		string uname = uuidToUser (rec["ownerid"]);
+		value vdata;
+		value columns = $("field", $attr("bold",true)->$val("Field")) ->
+						$("value", $attr("bold",false)->$val("Value")) ->
+						$("desc", $attr("bold",false)->$val("Description"));
+		
+		vdata.newval() =
+			$("field", "owner") ->
+			$("value", uname) ->
+			$("desc", "Object owner");
+		
+		foreach (v, params)
+		{
+			if (v["visible"])
+			{
+				vdata.newval() =
+					$("field",v.id()) ->
+					$("value",rec[v.id()].sval()) ->
+					$("desc",v["description"]);
+			}
+		}
+		
+		if (! vdata.count())
+		{
+			fout.writeln ("% \033[1mNo properties\033[0m");
+		}
+
+		formatter.clear ();
+		formatter.settitle ("");
+		formatter.setcolumns (columns);
+		formatter.adddata (vdata);
+		formatter.go ();
+	
+		return 0;
+	}
+	else if (argv.count() == 2)
 	{
 		statstring classid = shortnames[argv[1]]("realid");
 		statstring tpid = ctx.uuid ();
