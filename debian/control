@@ -7,6 +7,6 @@ Standards-Version: 3.7.2
 
 Package: openpanel-cli
 Architecture: any
-Depends: openpanel-core (>= 0.8.0), libgrace, libgrace-ssl
+Depends: libgrace, libgrace-ssl
 Description: cli
  the commandline interface
