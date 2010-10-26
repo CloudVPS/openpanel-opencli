@@ -13,49 +13,67 @@ extern bool SHOULDEXIT;
 class pathcontext
 {
 public:
-	const string		&parentuuid (void)
+	const string		&parentuuid (void) const
 						 {
 						 	if (path.count() < 3) return emptystring;
 						 	return path[-3]["uuid"].sval();
 						 }
 	
-	const string		&currentClass (void)
+	const string		&currentClass (void) const
 						 {
 						 	return path[-1]["class"].sval();
 						 }
 	
-	const string		&id (void)
+	const string		&id (void) const
 						 {
 						 	return path[-1]["id"].sval();
 						 }
 	
-	const string		&uuid (void)
+	const string		&uuid (void) const
 						 {
 						 	return path[-1]["uuid"].sval();
 						 }
 						 
 	void				 root (void)
 						 {
+							prevpath = path;
 						 	path = $( $("id","ROOT") ->
 						 			  $("type", "object") ->
 						 			  $("class", "root") );
 						 }
 						 
-	bool				 atRoot (void)
+	bool				 atRoot (void) const
 						 {
 						 	return (path.count() == 1);
 						 }
 						 
-	bool				 atFirstLevelOrRoot (void)
+	bool				 atFirstLevelOrRoot (void) const
 						 {
 						 	return (path.count() < 4);
 						 }
 						 
 	void				 levelUp (void)
 						 {
-						 	if (path.count()<3) return;
+						 	prevpath = path;
+							
+							if (path.count()<3) return;
 						 	path.rmindex (path.count()-1);
 						 	path.rmindex (path.count()-1);
+						 }
+
+	bool				 back (void)
+						 {
+							if ( prevpath.count()>= 1 )
+							{
+								value tmp = prevpath;
+						 		prevpath = path;
+								path = tmp;
+								return true;
+							}
+							else
+							{
+								return false;
+							}
 						 }
 						 
 	void				 enter (const statstring &newclass,
@@ -64,6 +82,7 @@ public:
 								const statstring &objectid,
 								const statstring &objectuuid)
 						 {
+							prevpath = path;
 						 	path.newval() = $("id", newclass) ->
 						 					$("short", shortname) ->
 						 					$("description", description) ->
@@ -78,6 +97,7 @@ public:
 						 
 protected:
 	value				 path;
+	value				 prevpath;
 };
 
 //  -------------------------------------------------------------------------
@@ -202,6 +222,7 @@ public:
 									 class coreclass &c);
 	
 	int					 cmdUpcontext (const value &argv);
+	int					 cmdBackcontext (const value &argv);
 	
 						 /// Implementation of the 'delete' command.
 	int					 cmdDelete (const value &argv);

@@ -141,6 +141,7 @@ void opencliApp::commandline (void)
 	shell.addsyntax ("version", &opencliApp::cmdVersion);		
 	shell.addsyntax ("exit", &opencliApp::cmdUpcontext);
 	shell.addsyntax ("..", &opencliApp::cmdUpcontext);
+	shell.addsyntax ("-", &opencliApp::cmdBackcontext);
 	shell.addsyntax ("end", &opencliApp::cmdUpcontext);
 	shell.addsyntax ("quit", &opencliApp::cmdExit);
 	shell.addsyntax ("help", &opencliApp::cmdHelp);
@@ -216,7 +217,8 @@ void opencliApp::commandline (void)
 				fout.writeln ("-> %s" %format (cmd));
 				shell.singlecmd (cmd);
 			}
-                	shell.term.off ();
+            
+			shell.term.off ();
 		}
 		else
 		{
@@ -1046,6 +1048,32 @@ int opencliApp::cmdUpcontext (const value &argv)
 		statstring parentid = ctx.parentuuid ();
 		coreclass cclass (conn, newclass);
 		focusclass (newclass, newid, parentid, cclass);
+	}
+	
+	return 0;
+}
+
+
+// ==========================================================================
+// METHOD opencliApp::cmdBackcontext
+// ==========================================================================
+int opencliApp::cmdBackcontext (const value &argv)
+{
+	if( ctx.back() )
+	{
+		if (ctx.atRoot() )
+		{
+			coreclass C (conn, "ROOT");
+			focusclass ("ROOT", "", "", C);
+		}
+		else
+		{
+			statstring newclass = ctx.currentClass ();
+			statstring newid = ctx.id ();
+			statstring parentid = ctx.parentuuid ();
+			coreclass cclass (conn, newclass);
+			focusclass (newclass, newid, parentid, cclass);
+		}
 	}
 	
 	return 0;
