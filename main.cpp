@@ -68,11 +68,11 @@ int opencliApp::main (void)
 	}
 	
 	// Execute the commandline.
-	commandline ();
+	int result = commandline ();
 	
 	// Ok we're done, drop the session.
 	conn.dropsession ();
-	return 0;
+	return result;
 }
 
 #define PRINTERR(x) ferr.writeln (x ": %s" %format (conn.geterror()))
@@ -80,7 +80,7 @@ int opencliApp::main (void)
 // ==========================================================================
 // METHOD opencliApp::commandline
 // ==========================================================================
-void opencliApp::commandline (void)
+int opencliApp::commandline (void)
 {
 	// Storage for login credentials.
 	string user;
@@ -98,7 +98,7 @@ void opencliApp::commandline (void)
 		else if (argv.exists ("--host"))
 		{
 			ferr.writeln ("% Can't log in with no username");
-			return;
+			return 1;
 		}
 	}
 	
@@ -221,19 +221,28 @@ void opencliApp::commandline (void)
 				cmdlist = argv["*"];
 			}
 
+            int result = 0;
 			foreach (cmd, cmdlist)
 			{
 				fout.writeln ("-> %s" %format (cmd));
-				shell.singlecmd (cmd);
+				result = shell.singlecmd (cmd);
+				if (result!=0) break;
 			}
-            
+			
 			shell.term.off ();
+			
+			return result;
 		}
 		else
 		{
 			// Create terminal prompt
 			prom = "[opencli]% ";
 			shell.run (prom);
+			
+	        shell.term.termbuf.savehistory ("home:.openclihistory");
+	        fs.chmod ("home:.openclihistory", 0600);
+        
+        	return 0;
 		}
 	}
 	catch (exception e)
@@ -242,8 +251,7 @@ void opencliApp::commandline (void)
 		shell.term.off ();
 	}
 	
-	shell.term.termbuf.savehistory ("home:.openclihistory");
-	fs.chmod ("home:.openclihistory", 0600);
+	return 1;
 }
 
 // ==========================================================================
@@ -312,7 +320,7 @@ int	 opencliApp::cmdDebug (const value &argv)
 			if ( 0 != kernel.sh (vicmd))
 			{
 				ferr.printf ("Err: Could not start vi\n");
-				break;
+				return 1;
 			}
 			
 			// do request
@@ -336,7 +344,7 @@ int	 opencliApp::cmdDebug (const value &argv)
 			
 		defaultcase :
 			ferr.printf ("%% Unknown command\n");
-			break;
+			return 1;
 	}
 
 	return 0;
@@ -369,12 +377,11 @@ int opencliApp::cmdMethod (const value &argv)
 	if (conn.execmethod (mclass, argv[3].sval(), params, parentid, id))
 	{
 		fout.writeln ("% Error executing method call");
-	}
-	else
-	{
-		fout.writeln ("% Request executed");
+    	return 1;
 	}
 
+
+	fout.writeln ("% Request executed");
 	return 0;
 }
 
@@ -387,6 +394,14 @@ int opencliApp::cmdHelp (const value &argv)
 	);
 	return 0;
 }
+
+int opencliApp::cmdExit (const value &argv) 
+{ 
+    shell.keeprunning = false; 
+    return 0; 
+}
+
+
 
 // ==========================================================================
 // METHOD opencliApp::cmdQuery
@@ -460,7 +475,7 @@ int opencliApp::cmdShow (const value &argv)
 	if (ctx.atRoot())
 	{
 		fout.writeln ("% No local data at this level");
-		return 0;
+		return 1;
 	}
 
 	string title;
@@ -742,7 +757,7 @@ int opencliApp::cmdCreate (const value &argv)
 				else
 				{
 					ferr.writeln ("%% Missing field: %s" %format (pv.id()));
-					return 0;
+					return 1;
 				}
 			}
 		}
@@ -777,6 +792,7 @@ int opencliApp::cmdCreate (const value &argv)
 	if (! nobjid)
 	{
 		ferr.writeln ("%% No object created: %s" %format (conn.geterror()));
+		return 1;
 	}
 	else
 	{
@@ -791,6 +807,8 @@ int opencliApp::cmdCreate (const value &argv)
 			{
 				fout.writeln ("%% Error setting owner: %s"
 											%format (conn.geterror()));
+                
+                return 1;											
 			}
 		}
 	}
@@ -804,9 +822,9 @@ int opencliApp::cmdSet (const value &argv)
 	statstring parentid = ctx.parentuuid ();
 	coreclass cclass (conn, classid);
 	
-	updateCommon (classid, ctx.id(), parentid, cclass, 1, argv);
+	int result = updateCommon (classid, ctx.id(), parentid, cclass, 1, argv);
 	crecord = conn.selectrecord (ctx.id(), parentid, classid);
-	return 0;
+	return result;
 }
 
 // ==========================================================================
@@ -842,14 +860,13 @@ int opencliApp::cmdUpdate (const value &argv)
 		classid = rval["class"];
 	}
 	
-	updateCommon (classid, updateid, parentid, cclass, paramstart, argv);
-	return 0;
+	return updateCommon (classid, updateid, parentid, cclass, paramstart, argv);
 }
 
 // ==========================================================================
 // METHOD opencliApp::updateCommon
 // ==========================================================================
-void opencliApp::updateCommon (const statstring &classid,
+int opencliApp::updateCommon (const statstring &classid,
 							   const statstring &id,
 							   const statstring &parentid,
 							   coreclass &cclass,
@@ -878,10 +895,12 @@ void opencliApp::updateCommon (const statstring &classid,
 	if (! res)
 	{
 		fout.writeln ("%% Object not updated: %s" %format (conn.geterror()));
+		return 1;
 	}
 	else
 	{
 		fout.writeln ("% Object updated");
+    	return 0;
 	}
 }
 
@@ -902,7 +921,7 @@ int opencliApp::cmdDelete (const value &argv)
 		if (! cclass.singleton ())
 		{
 			ferr.printf ("%% Incomplete command\n");
-			return 0;
+			return 1;
 		}
 		
 		// Ok, resolve the implicit id.
@@ -925,7 +944,7 @@ int opencliApp::cmdDelete (const value &argv)
 		if (! formatter.userconfirm ("Do you really want to delete this item?"))
 		{
 			fout.printf ("Delete aborted...\n");
-			return 0;
+			return 1;
 		}
 	}
 
@@ -944,6 +963,7 @@ int opencliApp::cmdDelete (const value &argv)
 	else
 	{
 		fout.writeln ("%% Error removing object: %s" %format (conn.geterror()));
+		return 1;
 	}
 
 	return 0;
@@ -978,7 +998,7 @@ int opencliApp::cmdSelectMeta (const value &argv)
 	if (! realclassid)
 	{
 		ferr.writeln ("% Error resolving object back to its class.");
-		return 0;
+		return 1;
 	}
 	
 	// Get the classinfo and short name for the real class
@@ -1039,7 +1059,8 @@ int opencliApp::cmdUpcontext (const value &argv)
 	// An 'exit' at top level is akin to a quit.
 	if ((ctx.atRoot ()) && (argv[0] == "exit"))
 	{
-		return 1;
+	    shell.keeprunning = false;
+		return 0;
 	}
 	
 	// If at 'root+1' or on the 'end' command, jump to ROOT.
@@ -1107,7 +1128,7 @@ int opencliApp::cmdSelect (const value &argv)
 	if (argv.count() < 2)
 	{
 		ferr.writeln ("% Insufficient arguments");
-		return 0;
+		return 1;
 	}
 	
 	in_shortclass = argv[1];
@@ -1125,7 +1146,7 @@ int opencliApp::cmdSelect (const value &argv)
 		if (argv.count() < 3)
 		{	
 			ferr.writeln ("% Insufficient arguments");
-			return 0;
+			return 1;
 		}
 	
 		// Special treatment for meta-base-classes. We'll divert these
@@ -1153,7 +1174,7 @@ int opencliApp::cmdSelect (const value &argv)
 		if (! newid)
 		{
 			ferr.writeln ("% No object-id found");
-			return 0;
+			return 1;
 		}
 	}
 	

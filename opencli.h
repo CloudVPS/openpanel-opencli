@@ -209,7 +209,7 @@ public:
 	int					 main (void);
 
 						 /// Execute the opencli command line.
-	void				 commandline (void);
+	int 				 commandline (void);
 
 						 /// Implementation of the 'show' command with
 						 /// no arguments.
@@ -245,7 +245,7 @@ public:
 						 /// Implementation of the 'set' command.
 	int					 cmdSet (const value &argv);
 	
-	void				 updateCommon (const statstring &classid,
+	int 				 updateCommon (const statstring &classid,
 									   const statstring &id,
 									   const statstring &parentid,
 									   class coreclass &cl,
@@ -255,13 +255,8 @@ public:
 						 /// Show basic help information.
 	int					 cmdHelp (const value &argv);
 	
-						 /// Stub-function that also doesn't return
-						 /// anything.
-						 /// \todo Rip this out or figure out the 'why'.
-	int					 cmdUp (const value &argv) {};
-	
 						 /// Implementation of the 'exit' command.
-	int					 cmdExit (const value &argv) { return 1; }
+	int					 cmdExit (const value &argv);
 
 						 /// Implementation of the 'debug' command.
 	int					 cmdDebug (const value &argv);

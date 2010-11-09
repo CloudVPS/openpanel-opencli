@@ -5,7 +5,8 @@
 //
 // Please note that use of the OpenPanel trademark may be subject to additional 
 // restrictions. For more information, please visit the Legal Information 
-// section of the OpenPanel website on http://www.openpanel.com/#ifndef _OPENCORE_VERSION_H
+// section of the OpenPanel website on http://www.openpanel.com/
+#ifndef _OPENCORE_VERSION_H
 #define _OPENCORE_VERSION_H 1
 
 #include <grace/str.h>
