@@ -397,7 +397,7 @@ int opencliApp::cmdHelp (const value &argv)
 
 int opencliApp::cmdExit (const value &argv) 
 { 
-    shell.keeprunning = false; 
+    shell.stoprunning();
     return 0; 
 }
 
@@ -1059,7 +1059,7 @@ int opencliApp::cmdUpcontext (const value &argv)
 	// An 'exit' at top level is akin to a quit.
 	if ((ctx.atRoot ()) && (argv[0] == "exit"))
 	{
-	    shell.keeprunning = false;
+	    shell.stoprunning();
 		return 0;
 	}
 	
