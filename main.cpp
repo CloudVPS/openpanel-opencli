@@ -41,7 +41,13 @@ void cbkeepalive (void *obj)
 // ==========================================================================
 int opencliApp::main (void)
 {
-	if (argv.exists ("--host"))
+	if (argv.exists ("--version"))
+	{
+	    cmdVersion("");
+	    return 0;
+	}
+	
+		if (argv.exists ("--host"))
 	{
 		conn.seturl ("https://%s:4089/json" %format (argv["--host"]));
 	}
@@ -270,7 +276,8 @@ int	 opencliApp::cmdVersion (const value &argv)
 	fout.writeln ("OpenCLI %s" %format (version::release));
 	fout.writeln ("%s %s@%s" %format (version::date, version::user,
 									  version::hostname));
-	return 0;
+	
+    fout.writeln ("Available under the GNU General Public License");
 }
 
 // ==========================================================================
