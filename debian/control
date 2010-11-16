@@ -1,12 +1,12 @@
 Source: openpanel-cli
 Section: misc
 Priority: optional
-Maintainer: OpenPanel packager <packages@openpanel.com
+Maintainer: OpenPanel packager <packages@openpanel.com>
 Build-Depends: debhelper (>= 5), libgrace-ssl-dev, libgrace-dev
 Standards-Version: 3.7.2
 
 Package: openpanel-cli
 Architecture: any
-Depends: libgrace, libgrace-ssl, ${shlibs:Depends}
+Depends: libgrace, libgrace-ssl, ${shlibs:Depends}, ${misc:Depends}
 Description: OpenPanel commandline interface
  the commandline interface
