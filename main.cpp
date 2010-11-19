@@ -183,7 +183,7 @@ int opencliApp::commandline (void)
 	shell.addhelp ("debug rawrequest",	"Send a request using vi");
 	
 	shell.addhelp ("version",	"Show current version");
-	shell.addhelp ("-", "Go back to previous context");
+	shell.addhelp ("-",			"Go back to previous context");
 	shell.addhelp ("end", 		"Go back to top level context");
 	shell.addhelp ("exit", 		"Go up to parent object");
 	shell.addhelp ("..",		"Go up to parent object");
