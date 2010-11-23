@@ -20,7 +20,7 @@
 // ============================================================================
 sessionproxy::sessionproxy (void)
 {
-	url 		= "unix://[var:opencore/sockets/opencore.sock]/json";
+	url 		= "unix://[var:openpanel/sockets/openpanel-core.sock]/json";
 	active 		= false;
 	cclassid 	= "ROOT"; // default class on startup
 }
@@ -490,7 +490,7 @@ value *sessionproxy::getrecords (const statstring &withclass,
 		
 		res = tres["body"]["data"][withclass];
 		
-		if (withclass.sval().strncasecmp ("opencore:", 9) != 0)
+		if (withclass.sval().strncasecmp ("openpanel-core:", 9) != 0)
 		{
 			value &C = objcache[parentid][withclass];
 			C = res;
@@ -651,7 +651,7 @@ value *sessionproxy::sendrequest (const value &req)
 	string origin;
 	
 	if (! connectionsrc.strlen()) connectionsrc = "vty";
-	origin = "opencli/pid=%i/src=%s" %format ((int)kernel.proc.self(),
+	origin = "openpanel-cli/pid=%i/src=%s" %format ((int)kernel.proc.self(),
 															connectionsrc);
 	if (id.strlen())
 	{
