@@ -12,19 +12,25 @@ include makeinclude
 
 OBJ	= main.o sessionproxy.o textformat.o version.o
 
-all: opencli README.opencli
+all: openpanel-cli README.openpanel-cli
 
 version.cpp:
 	grace mkversion version.cpp
 
-opencli: $(OBJ)
-	$(LD) $(LDFLAGS) -o opencli $(OBJ) $(LIBS) -lgrace-ssl
+openpanel-cli: $(OBJ)
+	$(LD) $(LDFLAGS) -o openpanel-cli $(OBJ) $(LIBS) -lgrace-ssl
 
-README.opencli: opencli.1
-	groff -t -e -man -Tascii opencli.1 | col -bx > README.opencli
+README.openpanel-cli: openpanel-cli.1
+	groff -t -e -man -Tascii openpanel-cli.1 | col -bx > README.openpanel-cli
+
+install:
+	mkdir -p ${DESTDIR}/usr/bin/
+	mkdir -p ${DESTDIR}/usr/share/man/man1
+	install -m 755 openpanel-cli ${DESTDIR}/usr/bin/openpanel-cli
+	gzip -c < openpanel-cli.1 > ${DESTDIR}/usr/share/man/man1/openpanel-cli.1.gz
 
 clean:
-	rm -f *.o opencli version.cpp
+	rm -f *.o openpanel-cli version.cpp
 
 SUFFIXES: .cpp .o
 .cpp.o:

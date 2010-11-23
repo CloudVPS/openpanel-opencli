@@ -1,3 +1,5 @@
-README.opencli
+README.openpanel-cli
 platform.h
 version.id
+configure.paths
+makeinclude

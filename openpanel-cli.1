@@ -1,15 +1,15 @@
-.TH opencli 2 2006-12-27
+.TH openpanel-cli 2 2006-12-27
 .SH NAME
 opencli \- The OpenPanel command line interface shell
 .SH SYNOPSIS
-opencli [--host|-h addr] [--shellcmd|-c cmdstring] [cmd] [cmd] [...]
+openpanel-cli [--host|-h addr] [--shellcmd|-c cmdstring] [cmd] [cmd] [...]
 .IP --host,\ -h
 Connect to a host over tcp (authentication needed).
 .IP --shellcmd,\ -c
 Treats cmdstring like a shell-quoted list, for ssh usage. See SSH Usage for
 more details.
 .SH INTRODUCTION
-The opencli tool is a command line interface to the opencore configuration
+The openpanel-cli tool is a command line interface to the opencore configuration
 system, intended as an alternative means of access to your OpenPanel host.
 It places you on a cisco-like command line that allows you to manipulate
 configuration objects under your control.
@@ -231,7 +231,7 @@ configure system-update
 .br
 configure package tar.i386 enabled=true
 .SH SSH USAGE
-Because opencli commands can contain spaces, remote ssh usage is a bit
+Because openpanel-cli commands can contain spaces, remote ssh usage is a bit
 different when it comes to quoting:
 .P
 .br
