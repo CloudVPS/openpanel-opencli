@@ -274,7 +274,7 @@ void opencliApp::keepalive (void)
 // ==========================================================================
 int	 opencliApp::cmdVersion (const value &argv)
 {
-	fout.writeln ("OpenCLI %s" %format (version::release));
+	fout.writeln ("OpenPanel CLI %s" %format (version::release));
 	fout.writeln ("%s %s@%s" %format (version::date, version::user,
 									  version::hostname));
 	
@@ -396,9 +396,9 @@ int opencliApp::cmdMethod (const value &argv)
 int opencliApp::cmdHelp (const value &argv)
 {
 	fout.writeln (
-		"Welcome to the opencli shell.\n"
+		"Welcome to the openpanel cli shell.\n"
 		"Use the question mark key '?' to explore your command line.\n"
-		"For further information, see the opencli manpage."
+		"For further information, see the openpanel-cli manpage."
 	);
 	return 0;
 }
@@ -1047,7 +1047,7 @@ void opencliApp::focusclass (const statstring &newclass,
 
 	if (newclass == "ROOT")
 	{
-		shell.setprompt ("[opencli]% ");
+		shell.setprompt ("[openpanel]% ");
 	}
 	else if (cclass.singleton ())
 	{
