@@ -243,11 +243,11 @@ int opencliApp::commandline (void)
 		else
 		{
 			// Create terminal prompt
-			prom = "[opencli]% ";
+			prom = "[openpanel]% ";
 			shell.run (prom);
 			
-	        shell.term.termbuf.savehistory ("home:.openclihistory");
-	        fs.chmod ("home:.openclihistory", 0600);
+	        shell.term.termbuf.savehistory ("home:.openpanel-clihistory");
+	        fs.chmod ("home:.openpanel-clihistory", 0600);
         
         	return 0;
 		}
