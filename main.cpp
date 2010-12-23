@@ -141,6 +141,7 @@ int opencliApp::commandline (void)
 	shell.addsyntax ("update @class @idparam", 	&opencliApp::cmdUpdate);
 	shell.addsyntax ("update @class @idparam @param", &opencliApp::cmdUpdate);
 	shell.addsyntax ("update @class @idparam @param #", &opencliApp::cmdUpdate);
+	shell.addsyntax ("password @classobject @classobject", &opencliApp::cmdPassword);
 	shell.addsyntax ("delete @class", &opencliApp::cmdDelete);
 	shell.addsyntax ("delete @class @id", 	&opencliApp::cmdDelete);
 	shell.addsyntax ("exec @class @id @methods", &opencliApp::cmdMethod);
@@ -168,6 +169,7 @@ int opencliApp::commandline (void)
 	shell.addhelp ("create", 	"Create a new object");
 	shell.addhelp ("set",		"Change field(s) of current object");
 	shell.addhelp ("update", 	"Update an existing object");
+	shell.addhelp ("password",	"Change password for an object");
 	shell.addhelp ("delete", 	"Delete an existing object");
 	shell.addhelp ("query",		"Query data with preselected columns");
 	shell.addhelp ("exec", 		"Execute a remote class method");
@@ -530,6 +532,37 @@ int opencliApp::cmdShow (const value &argv)
 	formatter.go ();
 
 	return 0;
+}
+
+// ==========================================================================
+// METHOD opencliApp::cmdPassword
+// ==========================================================================
+int opencliApp::cmdPassword (const value &argv)
+{
+	if (argv.count() == 3)
+	{
+		statstring classid = shortnames[argv[1]]("realid");
+		statstring tpid = ctx.uuid ();
+		statstring wantedid = argv[2];
+		string pass = shell.term.readpass ("Enter new password: ");
+		string pass2 = shell.term.readpass ("Retype new password: ");
+		if (pass != pass2)
+		{
+			fout.writeln ("% Passwords did not match");
+			return 1;
+		}
+		bool res = conn.updateobject (classid, wantedid,
+									  tpid, $("password",pass));
+		if (! res)
+		{
+			fout.writeln ("%% Object not updated: %s" %format (conn.geterror()));
+			return 1;
+		}
+		fout.writeln ("% Password updated");
+		return 0;
+	}
+	fout.writeln ("% Syntax error");
+	return 1;
 }
 
 // ==========================================================================

@@ -215,6 +215,9 @@ public:
 						 /// no arguments.
 	int					 cmdShow (const value &argv);
 
+						 /// Implementation of the 'password' command.
+	int					 cmdPassword (const value &argv);
+
 						 /// Implementation of the 'show' command with
 						 /// a specific object class argument. Displays
 						 /// a list of records.
