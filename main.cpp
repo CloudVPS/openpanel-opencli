@@ -191,7 +191,11 @@ int opencliApp::commandline (void)
 	shell.addhelp ("..",		"Go up to parent object");
 	shell.addhelp ("quit",		"Exit system");
 
-	shell.term.termbuf.loadhistory ("home:.openclihistory");
+	if( fs.exists("home:.openclihistory") )
+	{
+		shell.term.termbuf.loadhistory ("home:.openclihistory");
+	}
+	
 	shell.term.termbuf.setidlecb (cbkeepalive, this);
 
 	// Read login credentials from terminal.
