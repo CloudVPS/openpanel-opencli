@@ -132,8 +132,8 @@ int opencliApp::commandline (void)
 	shell.addsyntax ("show", &opencliApp::cmdShow);
 	shell.addsyntax ("show @classobject", &opencliApp::cmdList);
 	shell.addsyntax ("show @classobject @classobject", &opencliApp::cmdList);
-	shell.addsyntax ("query @classes @field", &opencliApp::cmdQuery);				 
-	shell.addsyntax ("query @classes @field #", &opencliApp::cmdQuery);
+	// shell.addsyntax ("query @classes @field", &opencliApp::cmdQuery);				 
+	// shell.addsyntax ("query @classes @field #", &opencliApp::cmdQuery);
 	shell.addsyntax ("create @userclassparam", &opencliApp::cmdCreate);
 	shell.addsyntax ("create @userclassparam #", &opencliApp::cmdCreate);
 	shell.addsyntax ("set @param", &opencliApp::cmdSet);
@@ -144,9 +144,9 @@ int opencliApp::commandline (void)
 	shell.addsyntax ("password @classobject @classobject", &opencliApp::cmdPassword);
 	shell.addsyntax ("delete @class", &opencliApp::cmdDelete);
 	shell.addsyntax ("delete @class @id", 	&opencliApp::cmdDelete);
-	shell.addsyntax ("exec @class @id @methods", &opencliApp::cmdMethod);
-	shell.addsyntax ("exec @class @id @methods @methodparams", &opencliApp::cmdMethod);
-	shell.addsyntax ("exec @class @id @methods @methodparams #", &opencliApp::cmdMethod);
+	// shell.addsyntax ("exec @class @id @methods", &opencliApp::cmdMethod);
+	// shell.addsyntax ("exec @class @id @methods @methodparams", &opencliApp::cmdMethod);
+	// shell.addsyntax ("exec @class @id @methods @methodparams #", &opencliApp::cmdMethod);
 	shell.addsyntax ("debug session", &opencliApp::cmdDebug);
 	shell.addsyntax ("debug capabilities @class", &opencliApp::cmdDebug);
 	shell.addsyntax ("debug params @class", &opencliApp::cmdDebug);
@@ -171,8 +171,8 @@ int opencliApp::commandline (void)
 	shell.addhelp ("update", 	"Update an existing object");
 	shell.addhelp ("password",	"Change password for an object");
 	shell.addhelp ("delete", 	"Delete an existing object");
-	shell.addhelp ("query",		"Query data with preselected columns");
-	shell.addhelp ("exec", 		"Execute a remote class method");
+	// shell.addhelp ("query",		"Query data with preselected columns");
+	// shell.addhelp ("exec", 		"Execute a remote class method");
 	shell.addhelp ("help",      "Brief help message");
 	
 	shell.addhelp ("debug", 			"Debug");
