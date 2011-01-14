@@ -261,6 +261,8 @@ int opencliApp::commandline (void)
 	catch (exception e)
 	{
 		ferr.writeln ("\n%% Exception: %s." %format (e.description));
+		shell.term.termbuf.savehistory ("home:.openpanel-clihistory");
+		fs.chmod ("home:.openpanel-clihistory", 0600);
 		shell.term.off ();
 	}
 	
