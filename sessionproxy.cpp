@@ -658,15 +658,21 @@ value *sessionproxy::sendrequest (const value &req)
 		outreq["header"]["session_id"] = id;
 	}
 	
-	httpsocket ht;
-	ht.postheaders["X-OpenCORE-Origin"] = origin;
+	httpsocket *_ht;
 	
 	if (url.strncmp ("https://", 8) == 0)
 	{
-		ht.sock().codec = new sslclientcodec;
-		ht.sock().codec->nocertcheck ();
+		_ht = new httpssocket;
+		((httpssocket*)_ht)->nocertcheck();
+	}
+	else
+	{
+		_ht = new httpsocket;
 	}
 	
+	httpsocket &ht = *_ht;
+	ht.postheaders["X-OpenCORE-Origin"] = origin;
+		
 	string jsonout;
 	string jsonin;
 	
@@ -678,9 +684,16 @@ value *sessionproxy::sendrequest (const value &req)
 		string realst = "%i" %format (ht.status);
 		if (ht.status != 200) fs.save ("realstatus",realst);
 		delete &res;
-		if (ht.status != 200) throw (connectionException("no 200 status"));
+		if (ht.status != 200)
+		{
+			delete _ht;
+			throw (connectionException("no 200 status"));
+		}
+		delete _ht;
 		throw (connectionException("No JSON data"));
 	}
+	
+	delete _ht;
 	
 	res.fromjson (jsonout);
 	if (! res.count())
