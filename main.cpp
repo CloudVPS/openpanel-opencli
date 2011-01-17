@@ -191,9 +191,9 @@ int opencliApp::commandline (void)
 	shell.addhelp ("..",		"Go up to parent object");
 	shell.addhelp ("quit",		"Exit system");
 
-	if( fs.exists("home:.openclihistory") )
+	if (fs.exists("home:.openpanel-clihistory"))
 	{
-		shell.term.termbuf.loadhistory ("home:.openclihistory");
+		shell.term.termbuf.loadhistory ("home:.openpanel-clihistory");
 	}
 	
 	shell.term.termbuf.setidlecb (cbkeepalive, this);
