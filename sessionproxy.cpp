@@ -682,7 +682,7 @@ value *sessionproxy::sendrequest (const value &req)
 	if ((ht.status != 200) || (! jsonout))
 	{
 		string realst = "%i" %format (ht.status);
-		if (ht.status != 200) fs.save ("realstatus",realst);
+		//if (ht.status != 200) fs.save ("realstatus",realst);
 		delete &res;
 		if (ht.status != 200)
 		{
