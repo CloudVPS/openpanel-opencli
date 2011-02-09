@@ -47,7 +47,7 @@ int opencliApp::main (void)
 	    return 0;
 	}
 	
-		if (argv.exists ("--host"))
+	if (argv.exists ("--host"))
 	{
 		conn.seturl ("https://%s:4089/json" %format (argv["--host"]));
 	}
@@ -225,6 +225,8 @@ int opencliApp::commandline (void)
 			INTERACTIVE = false;
 			value cmdlist;
 
+			shell.term.off ();
+
 			if (argv.exists("--shellcmd"))
 			{
 				cmdlist = strutil::splitquoted (argv["--shellcmd"]);
@@ -237,12 +239,10 @@ int opencliApp::commandline (void)
             int result = 0;
 			foreach (cmd, cmdlist)
 			{
-				fout.writeln ("-> %s" %format (cmd));
+				//fout.writeln ("-> %s" %format (cmd));
 				result = shell.singlecmd (cmd);
 				if (result!=0) break;
-			}
-			
-			shell.term.off ();
+			}			
 			
 			return result;
 		}
