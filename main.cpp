@@ -141,6 +141,7 @@ int opencliApp::commandline (void)
 	shell.addsyntax ("update @class @idparam", 	&opencliApp::cmdUpdate);
 	shell.addsyntax ("update @class @idparam @param", &opencliApp::cmdUpdate);
 	shell.addsyntax ("update @class @idparam @param #", &opencliApp::cmdUpdate);
+	shell.addsyntax ("password @classobject", &opencliApp::cmdPassword);
 	shell.addsyntax ("password @classobject @classobject", &opencliApp::cmdPassword);
 	shell.addsyntax ("delete @class", &opencliApp::cmdDelete);
 	shell.addsyntax ("delete @class @id", 	&opencliApp::cmdDelete);
@@ -549,7 +550,22 @@ int opencliApp::cmdPassword (const value &argv)
 	{
 		statstring classid = shortnames[argv[1]]("realid");
 		statstring tpid = ctx.uuid ();
-		statstring wantedid = argv[2];
+		coreclass cclass (conn, classid);
+		statstring wantedid;
+		if (cclass.singleton())
+		{
+			wantedid = cclass.singletonid();
+		}
+		else
+		{
+			if (argv.count() < 3)
+			{
+				ferr.writeln ("% Incomplete command");
+				return 1;
+			}
+			
+			wantedid = argv[2];
+		}
 		string pass = shell.term.readpass ("Enter new password: ");
 		string pass2 = shell.term.readpass ("Retype new password: ");
 		if (pass != pass2)
