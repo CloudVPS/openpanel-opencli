@@ -546,7 +546,7 @@ int opencliApp::cmdShow (const value &argv)
 // ==========================================================================
 int opencliApp::cmdPassword (const value &argv)
 {
-	if (argv.count() == 3)
+	if (argv.count() > 1)
 	{
 		statstring classid = shortnames[argv[1]]("realid");
 		statstring tpid = ctx.uuid ();
